@@ -20,5 +20,7 @@ namespace LibDynamicWallpaperWin
 
 		[JsonPropertyName("images")]
 		public required List<DynamicWallpaperImage> Images { get; set; }
+
+		public string MetaFile { get; set; } = string.Empty;
 	}
 }

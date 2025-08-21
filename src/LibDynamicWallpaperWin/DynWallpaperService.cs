@@ -12,14 +12,52 @@ namespace LibDynamicWallpaperWin
         private CancellationTokenSource _schedulerCtoken;   // todo implement shutdown
 
 		private readonly ILogger<DynWallpaperService> _logger;
+		private readonly ConfigHandlerService? _configHandler;
 
-		public DynWallpaperService(ILogger<DynWallpaperService> logger) 
+		public DynWallpaperService(ILogger<DynWallpaperService> logger, ConfigHandlerService? configHandler)
         {
             _logger = logger;
+            _configHandler = configHandler;
             _wallpaperList = new List<DynamicWallpaper>();
             _activeWallpaper = null;
 			_schedulerCtoken = new CancellationTokenSource();
+
+            if (_configHandler != null) {
+                InitializeFromConfig();
+                _logger.LogInformation($"Dynamic wallpaper service initialized from configuration file.");
+            }
 		}
+
+        private void InitializeFromConfig()
+        {
+            foreach (var metaFile in _configHandler!.GetMetaFiles())
+            {
+				try
+				{
+					var r = DynamicWallpaperLoader.LoadDynamicWallaper(metaFile);
+					_wallpaperList.Add(r);
+					_logger.LogInformation($"Loaded and added dynamic wallpaper {r.Name} from config meta file {metaFile}.");
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError($"Failed to load dynamic wallpaper {metaFile} from config file. {ex.Message.ToString()}");
+                    // config might be corrupted, clear it
+                    _configHandler.ClearConfig();
+				}
+			}
+
+            string? activeWallpaperFromConfig = _configHandler!.GetStoredActiveWallpaper();
+
+			if (activeWallpaperFromConfig != null)
+            {
+                DynamicWallpaper? wallpaper = _wallpaperList.FirstOrDefault(c => c.Name == activeWallpaperFromConfig);
+                if (wallpaper != null)
+                {
+					_activeWallpaper = wallpaper;
+                    UpdateWallpaper(); // This will start the scheduler
+				}
+            }
+        }
 
         public List<string> GetWallpapers()
         {
@@ -31,8 +69,17 @@ namespace LibDynamicWallpaperWin
             try
             {
                 var r = DynamicWallpaperLoader.LoadDynamicWallaper(wallpaperMetaFile);
+
+                // check if a wallpaper with this ID (name) already exists
+                if (_wallpaperList.Count(c => c.Name == r.Name) > 0)
+                {
+					_logger.LogWarning($"Wallaper with name '{r.Name}' is already added");
+					throw new Exception($"Wallaper with name '{r.Name}' is already added");
+                }
+
                 _wallpaperList.Add(r);
 				_logger.LogInformation($"Loaded and added dynamic wallpaper {r.Name} from meta file {wallpaperMetaFile}.");
+                SaveConfig();
 				return r.Name;
             }
             catch (Exception ex)
@@ -54,7 +101,9 @@ namespace LibDynamicWallpaperWin
             {
                 ClearActiveWallpaper();
             }
-            return _wallpaperList.Remove(wp);
+            bool removeSuccess = _wallpaperList.Remove(wp);
+			SaveConfig();
+            return removeSuccess;
         }
 
 
@@ -71,6 +120,7 @@ namespace LibDynamicWallpaperWin
 			_activeWallpaper = wp;
 			_logger.LogInformation($"Setting active wallpaper to '{wallpaper}'");
 			UpdateWallpaper();
+            SaveConfig();
 			return true;
 		}
 
@@ -83,8 +133,9 @@ namespace LibDynamicWallpaperWin
             _logger.LogInformation("Clearing active wallpaper.");
 			_schedulerCtoken.Cancel();
 			_activeWallpaper = null;
-            
-            return true;
+            SaveConfig();
+
+			return true;
         }
 
         // This function immediately updates the wallpaper, it can be called by the application layer,
@@ -169,5 +220,13 @@ namespace LibDynamicWallpaperWin
 
             return closest;
         }
+
+        private void SaveConfig()
+        {
+			if (_configHandler != null)
+			{
+				_configHandler.SaveConfig(_activeWallpaper?.Name, _wallpaperList.Select(c => c.MetaFile).ToList());
+			}
+		}
     }
 }

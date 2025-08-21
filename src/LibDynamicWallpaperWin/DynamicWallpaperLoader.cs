@@ -54,8 +54,7 @@ namespace LibDynamicWallpaperWin
 					imageDTO.FileName = fullImagePath;
 				}
 
-				// TODO: validate that all times are unique, there should not be 2 wallpapers at the same time
-
+				dto.MetaFile = jsonMetaFile;
 				return dto;
 			}
 			catch(Exception ex)
