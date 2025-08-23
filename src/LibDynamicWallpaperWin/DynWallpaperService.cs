@@ -1,6 +1,5 @@
 ﻿// some resources for icons perhaps: https://stackoverflow.com/questions/4142203/does-net-have-icon-collections
 
-using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace LibDynamicWallpaperWin
@@ -59,7 +58,16 @@ namespace LibDynamicWallpaperWin
             }
         }
 
-        public List<string> GetWallpapers()
+		public string? GetActiveWallpaper()
+        {
+            if (_activeWallpaper == null)
+            {
+				return null;
+			}
+            return _activeWallpaper.Name;
+        }
+
+		public List<string> GetWallpapers()
         {
             return _wallpaperList.Select(c => c.Name).ToList();
         }
