@@ -2,12 +2,6 @@
 using LibDynamicWallpaperWin.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace DynamicWallpaperWin
 {
@@ -17,7 +11,6 @@ namespace DynamicWallpaperWin
 		private readonly ILogger _logger;
 		private readonly DynWallpaperService _wallpaperService;
 		
-
 		internal DynamicWallpaperApp()
 		{
 			ServiceProvider serviceProvider = InitServices();
@@ -167,11 +160,10 @@ namespace DynamicWallpaperWin
 
 		private void MenuClickAbout(object? sender, EventArgs e)
 		{
-			// TODO: implement about
-			/*using (Form f = new AboutForm())
+			using (Form f = new AboutForm())
 			{
 				f.ShowDialog();
-			}*/
+			}
 		}
 
 		private void MenuClickExit(object? sender, EventArgs e)

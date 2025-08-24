@@ -9,6 +9,13 @@
     <ApplicationIcon>Resources\dynwallpaper.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AssemblyTitle>DynWallpaperWin</AssemblyTitle>
+    <Product>Dynamic Wallpaper for Windows</Product>
+    <Copyright>Copyright © mlogic1 2025</Copyright>
+    <AssemblyVersion>1.0</AssemblyVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="Resources\dynwallpaper.ico" />
   </ItemGroup>
