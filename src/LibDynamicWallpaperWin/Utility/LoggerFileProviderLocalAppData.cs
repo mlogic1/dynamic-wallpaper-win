@@ -19,6 +19,24 @@ namespace LibDynamicWallpaperWin.Utility
 			{
 				throw new Exception(ex.Message);
 			}
+
+			ClearOldLogFile();
+		}
+
+		private void ClearOldLogFile()
+		{
+			string logFile = Path.Combine(appDataDir, LOGGER_FILE_NAME);
+			if (!File.Exists(logFile)) { return; }
+
+			DateTime now = DateTime.Now;
+			if ((now - File.GetCreationTime(logFile)).TotalDays > 7)
+			{
+				try
+				{
+					File.Delete(logFile);
+				}
+				catch (Exception) { }
+			}
 		}
 
 		public ILogger CreateLogger(string categoryName)
